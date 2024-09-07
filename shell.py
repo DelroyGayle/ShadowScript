@@ -5,8 +5,17 @@ from data import Data
 
 base = Data()
 
+"""
+'exit' added to end the running of the script
+"""
+
 while True:
-    text = input("ShadowScript: ")
+    text = input('ShadowScript: ').strip()
+
+    if text == '':
+        continue
+    elif text == 'exit':
+        break
 
     tokenizer = Lexer(text)
     tokens = tokenizer.tokenize()
