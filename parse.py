@@ -7,29 +7,35 @@ class Parser:
     def factor(self):
         if self.token.type == 'INT' or self.token.type == 'FLT':
             return self.token
+
         elif self.token.value == '(':
             self.move()
             expression = self.boolean_expression()
             return expression
+
+        # not <expr>
         elif self.token.value == 'not':
             operator = self.token
             self.move()
-            output = [operator, self.boolean_expression()]
+            output = [operator, self.factor()]
             return output
 
+        # Variables
         elif self.token.type.startswith('VAR'):
             return self.token
+
+        # Unary Operators + <expr> | - <expr>
         elif self.token.value == '+' or self.token.value == '-':
             operator = self.token
             self.move()
-            operand = self.boolean_expression()
-
+            operand = self.factor()
             return [operator, operand]
 
     def term(self):
         left_node = self.factor()
         self.move()
 
+        # <expr> * <expr> ... | <expr> / <expr> ...
         while self.token.value == '*' or self.token.value == '/':
             operator = self.token
             self.move()
@@ -39,6 +45,45 @@ class Parser:
             left_node = [left_node, operator, right_node]
 
         return left_node
+
+    def plus_sub_expression(self):
+        left_node = self.term()
+        # <expr> + <expr> | <expr> - <expr>
+        while self.token.value == '+' or self.token.value == '-':
+            operator = self.token
+            self.move()
+            right_node = self.term()
+            left_node = [left_node, operator, right_node]
+
+        return left_node
+
+    def comp_expression(self):
+        left_node = self.plus_sub_expression()
+        # <expr> ?= <expr> ... | <expr> '>' <expr> ... |
+        # <expr> '<' <expr> ... |
+        # <expr> <= <expr> ... | <expr> '>=' <expr> ...
+        while self.token.type == 'COMP':
+            operator = self.token
+            self.move()
+            right_node = self.plus_sub_expression()
+            left_node = [left_node, operator, right_node]
+
+        return left_node
+
+    def boolean_expression(self):
+        left_node = self.comp_expression()
+
+        while self.token.value == 'and' or self.token.value == 'or':
+            operator = self.token
+            self.move()
+            right_node = self.comp_expression()
+            left_node = [left_node, operator, right_node]
+
+        return left_node
+
+    def variable(self):
+        if self.token.type.startswith('VAR'):
+            return self.token
 
     def if_statement(self):
         self.move()
@@ -88,41 +133,6 @@ class Parser:
             action = self.statement()
             return [condition, action]
 
-    def comp_expression(self):
-        left_node = self.expression()
-        while self.token.type == 'COMP':
-            operator = self.token
-            self.move()
-            right_node = self.expression()
-            left_node = [left_node, operator, right_node]
-
-        return left_node
-
-    def boolean_expression(self):
-        left_node = self.comp_expression()
-
-        while self.token.value == 'and' or self.token.value == 'or':
-            operator = self.token
-            self.move()
-            right_node = self.comp_expression()
-            left_node = [left_node, operator, right_node]
-
-        return left_node
-
-    def expression(self):
-        left_node = self.term()
-        while self.token.value == '+' or self.token.value == '-':
-            operator = self.token
-            self.move()
-            right_node = self.term()
-            left_node = [left_node, operator, right_node]
-
-        return left_node
-
-    def variable(self):
-        if self.token.type.startswith('VAR'):
-            return self.token
-
     def statement(self):
         if self.token.type == 'DECL':
             self.move()
@@ -141,6 +151,7 @@ class Parser:
 
         elif self.token.value == 'if':
             return [self.token, self.if_statements()]
+
         elif self.token.value == 'while':
             return [self.token, self.while_statement()]
 
