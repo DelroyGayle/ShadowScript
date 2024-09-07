@@ -2,6 +2,20 @@ from tokens import Integer, Float, Operation, Declaration
 from tokens import Variable, Boolean, Comparison, Reserved
 import string
 
+"""
+Error handling
+"""
+
+
+class Error:
+    def __init__(self, error_name, error_details):
+        self.error_name = error_name
+        self.error_details = error_details
+
+    def str(self):
+        string_result = f'{self.error_name}: {self:error_details}'
+        return string_result
+
 
 class Lexer:
     # Instead of digits = "0123456789" use:

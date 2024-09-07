@@ -1,3 +1,6 @@
+from lexer import Error
+
+
 class Parser:
     def __init__(self, tokens):
         self.tokens = tokens
@@ -22,6 +25,7 @@ class Parser:
 
         # Variables
         elif self.token.type.startswith('VAR'):
+            print(self.token)
             return self.token
 
         # Unary Operators + <expr> | - <expr>
@@ -134,6 +138,7 @@ class Parser:
             return [condition, action]
 
     def statement(self):
+        print(self.token.type, self.token.value)
         if self.token.type == 'DECL':
             self.move()
             left_node = self.variable()
@@ -154,6 +159,11 @@ class Parser:
 
         elif self.token.value == 'while':
             return [self.token, self.while_statement()]
+
+        # Add error handling
+        else:
+            raise TypeError('I do not understand this statement',
+                            f"{self.token.value}")
 
     def parse(self):
         return self.statement()

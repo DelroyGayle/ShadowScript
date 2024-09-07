@@ -13,6 +13,7 @@ class Interpreter:
         return float(value)
 
     def read_VAR(self, id):
+        print(id, self.data.read(id))
         variable = self.data.read(id)
         variable_type = variable.type
 
